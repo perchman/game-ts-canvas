@@ -18,9 +18,9 @@ export default class Ship {
         const newPosition: Position = { ...this.position };
 
         if (direction === 'left') {
-            newPosition.x -= 1;
+            newPosition.x -= 3;
         } else {
-            newPosition.x += 1;
+            newPosition.x += 3;
         }
 
         newPosition.x = Math.max(0, Math.min(this.canvas.width - 3, newPosition.x));
@@ -31,7 +31,7 @@ export default class Ship {
         const context = this.canvas.getContext('2d');
         if (!context) return;
 
-        context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        context.clearRect(this.position.x - 10,  this.position.y - 10, 20, 20);
         context.fillStyle = 'blue';
         context.beginPath();
         context.moveTo(this.position.x, this.position.y);

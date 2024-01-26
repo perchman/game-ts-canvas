@@ -1,5 +1,6 @@
 import Ship from "./Ship";
 import Lasers from "./Laser";
+import Targets from "./Targets";
 import './style.css';
 
 interface Position {
@@ -21,13 +22,14 @@ document.addEventListener('DOMContentLoaded', async (): Promise<void> => {
     const canvas: HTMLCanvasElement = document.getElementById('canvas') as HTMLCanvasElement;
     const ship: Ship = new Ship(canvas, {x: 150, y: 130});
     const lasers: Lasers = new Lasers(canvas);
-
+    const targets: Targets = new Targets(canvas);
+    targets.createMatrix();
+    console.log(targets.matrix);
     let animationId: number | null = null;
 
     const draw = (): void => {
-        ship.draw();
         lasers.draw();
-        lasers.move();
+        lasers.move(targets);
 
         if (lasers.lasers.length !== 0) {
             // Планируем следующий кадр анимации
@@ -44,44 +46,48 @@ document.addEventListener('DOMContentLoaded', async (): Promise<void> => {
             case 'ArrowLeft':
             case 'a':
                 ship.move('left');
+                ship.draw();
                 break;
 
             case 'ArrowRight':
             case 'd':
                 ship.move('right');
+                ship.draw();
                 break;
 
             case ' ':
                 lasers.fire(ship.position);
+                if (!animationId) {
+                    draw();
+                }
                 break;
 
             default:
                 break;
         }
-
-        if (!animationId) {
-            draw();
-        }
     });
-    //
-    // let intervalId: NodeJS.Timeout | null = null;
 
-    // const draw = (): void => {
-    //     ship.draw();
-    //     lasers.draw();
-    //
-    //     if (lasers.lasers.length !== 0 && !intervalId) {
-    //         intervalId = setInterval(() => {
-    //             lasers.move();
-    //
-    //             // Проверяем, есть ли еще активные лазеры, если нет - останавливаем интервал
-    //             if (lasers.lasers.length === 0) {
-    //                 clearInterval(intervalId!);
-    //                 intervalId = null;
-    //             }
-    //         }, 500);
-    //     }
-    // }
-
+    ship.draw();
+    targets.draw();
     draw();
 });
+
+//
+// let intervalId: NodeJS.Timeout | null = null;
+
+// const draw = (): void => {
+//     ship.draw();
+//     lasers.draw();
+//
+//     if (lasers.lasers.length !== 0 && !intervalId) {
+//         intervalId = setInterval(() => {
+//             lasers.move();
+//
+//             // Проверяем, есть ли еще активные лазеры, если нет - останавливаем интервал
+//             if (lasers.lasers.length === 0) {
+//                 clearInterval(intervalId!);
+//                 intervalId = null;
+//             }
+//         }, 500);
+//     }
+// }
