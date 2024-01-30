@@ -1,76 +1,120 @@
-import Ship from "./Ship";
-import Lasers from "./Laser";
-import Targets from "./Targets";
-import './style.css';
+import "./style.css";
+import TargetsController from "./targets/TargetsController";
 
-interface Position {
-    x: number;
-    y: number;
-}
+const dataset = require('./dataset');
 
-document.addEventListener('DOMContentLoaded', async (): Promise<void> => {
-    const root: HTMLElement | null = document.getElementById('root');
+const root: HTMLElement | null = document.getElementById('root');
+if (!root) throw new Error('HTMLElement "root" is null');
 
-    if (!root) return;
-
-    root.innerHTML = `
+root.innerHTML = `
         <div class="container">
             <canvas id="canvas"></canvas>
         </div>
     `;
 
-    const canvas: HTMLCanvasElement = document.getElementById('canvas') as HTMLCanvasElement;
-    const ship: Ship = new Ship(canvas, {x: 150, y: 130});
-    const lasers: Lasers = new Lasers(canvas);
-    const targets: Targets = new Targets(canvas);
-    targets.createMatrix();
-    console.log(targets.matrix);
-    let animationId: number | null = null;
+const canvas: HTMLCanvasElement = document.getElementById('canvas') as HTMLCanvasElement;
+canvas.width = 600;
+canvas.height = 600;
 
-    const draw = (): void => {
-        lasers.draw();
-        lasers.move(targets);
+const targetsController: TargetsController = new TargetsController(canvas);
+targetsController.createTargets();
 
-        if (lasers.lasers.length !== 0) {
-            // Планируем следующий кадр анимации
-            animationId = requestAnimationFrame(draw);
-        } else {
-            // Если лазеров нет, останавливаем анимацию
-            cancelAnimationFrame(animationId!);
-            animationId = null;
-        }
-    };
+const context: CanvasRenderingContext2D = canvas.getContext('2d') as CanvasRenderingContext2D;
 
-    window.addEventListener('keydown', (event: KeyboardEvent): void => {
-        switch (event.key) {
-            case 'ArrowLeft':
-            case 'a':
-                ship.move('left');
-                ship.draw();
-                break;
+const background: HTMLImageElement = new Image();
+background.src = dataset.space;
 
-            case 'ArrowRight':
-            case 'd':
-                ship.move('right');
-                ship.draw();
-                break;
+const game = (): void => {
+    context.drawImage(background, 0, 0, canvas.width, canvas.height);
 
-            case ' ':
-                lasers.fire(ship.position);
-                if (!animationId) {
-                    draw();
-                }
-                break;
+    targetsController.draw(context);
+}
 
-            default:
-                break;
-        }
-    });
+setInterval(game, 1000/60);
 
-    ship.draw();
-    targets.draw();
-    draw();
-});
+// document.addEventListener('DOMContentLoaded', (): void => {
+//
+// })
+
+
+// const context = canvas.getContext('2d');
+
+
+
+
+// import Ship from "./Ship";
+// import Lasers from "./Laser";
+// import Targets from "./Targets";
+// import './style.css';
+//
+// interface Position {
+//     x: number;
+//     y: number;
+// }
+//
+// document.addEventListener('DOMContentLoaded', async (): Promise<void> => {
+//     const root: HTMLElement | null = document.getElementById('root');
+//
+//     if (!root) return;
+//
+//     root.innerHTML = `
+//         <div class="container">
+//             <canvas id="canvas"></canvas>
+//         </div>
+//     `;
+//
+//     const canvas: HTMLCanvasElement = document.getElementById('canvas') as HTMLCanvasElement;
+//     const ship: Ship = new Ship(canvas, {x: 150, y: 130});
+//     const lasers: Lasers = new Lasers(canvas);
+//     const targets: Targets = new Targets(canvas);
+//     targets.createMatrix();
+//     console.log(targets.matrix);
+//     let animationId: number | null = null;
+//
+//     const draw = (): void => {
+//         lasers.draw();
+//         lasers.move(targets);
+//
+//         if (lasers.lasers.length !== 0) {
+//             // Планируем следующий кадр анимации
+//             animationId = requestAnimationFrame(draw);
+//         } else {
+//             // Если лазеров нет, останавливаем анимацию
+//             cancelAnimationFrame(animationId!);
+//             animationId = null;
+//         }
+//     };
+//
+//     window.addEventListener('keydown', (event: KeyboardEvent): void => {
+//         switch (event.key) {
+//             case 'ArrowLeft':
+//             case 'a':
+//                 ship.move('left');
+//                 ship.draw();
+//                 break;
+//
+//             case 'ArrowRight':
+//             case 'd':
+//                 ship.move('right');
+//                 ship.draw();
+//                 break;
+//
+//             case ' ':
+//                 lasers.fire(ship.position);
+//                 if (!animationId) {
+//                     draw();
+//                 }
+//                 break;
+//
+//             default:
+//                 break;
+//         }
+//     });
+//
+//     ship.draw();
+//     targets.draw();
+//     draw();
+// });
 
 //
 // let intervalId: NodeJS.Timeout | null = null;

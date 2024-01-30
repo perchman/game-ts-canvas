@@ -18,14 +18,14 @@ module.exports = {
                 test: /\.tsx?$/,
                 use: 'ts-loader',
                 exclude: /node_modules/
-            }
+            },
         ],
     },
     resolve: {
         extensions: ['.tsx', '.ts', '.js']
     },
     devServer: {
-        port: 4000,
+        port: 4000
     },
     plugins: [
         new HTMLWebpackPlugin({

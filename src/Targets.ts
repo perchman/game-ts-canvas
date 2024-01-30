@@ -10,7 +10,7 @@ interface Target {
 
 export default class Targets {
     canvas: HTMLCanvasElement
-    matrix: (Position | null)[][];
+    matrix: (Target)[][];
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
         this.matrix = [];
@@ -34,7 +34,10 @@ export default class Targets {
                 const x = startX + j * (2 * radius + padding) + radius;
                 const y = i * (2 * radius + padding) + radius;
 
-                row.push({ x, y });
+                row.push({
+                    isHit: false,
+                    position: { x, y }
+                });
             }
 
             this.matrix.push(row);
@@ -45,13 +48,13 @@ export default class Targets {
         const context = this.canvas.getContext("2d");
         if (!context) return;
 
-        context.clearRect(0, 0, 300, 30);
+        context.clearRect(0, 0, this.canvas.width, this.canvas.height / 3);
 
         for (let row of this.matrix) {
             for (let target of row) {
-                if (target) {
+                if (!target?.isHit) {
                     context.beginPath();
-                    context.arc(target.x, target.y, 3, 0, 2 * Math.PI);
+                    context.arc(target.position.x, target.position.y, 3, 0, 2 * Math.PI);
                     context.fillStyle = "red";
                     context.fill();
                 }
@@ -60,7 +63,7 @@ export default class Targets {
     }
 
     hit(rowIndex: number, targetIndex: number): void {
-        this.matrix[rowIndex][targetIndex] = null;
+        this.matrix[rowIndex][targetIndex].isHit = true;
         this.draw();
     }
 }

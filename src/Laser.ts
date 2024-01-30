@@ -11,7 +11,7 @@ interface Laser {
 }
 
 interface Target {
-    id: number;
+    isHit: boolean;
     position: Position
 }
 
@@ -28,7 +28,7 @@ export default class Lasers {
             id: Date.now(),
             position: {...position},
         };
-
+        console.log(newLaser.position, position);
         this.lasers.push(newLaser);
     };
 
@@ -36,12 +36,11 @@ export default class Lasers {
         const context = this.canvas.getContext('2d');
         if (!context) return;
 
-        // Отрисовка лазеров
         context.strokeStyle = 'green';
         context.lineWidth = 2;
 
         this.lasers.forEach((laser: Laser): void => {
-            const laserHeight = 5; // Высота лазера
+            const laserHeight = 5;
 
             context.clearRect(laser.position.x - 1, laser.position.y - 4, 3, laserHeight);
 
@@ -52,17 +51,52 @@ export default class Lasers {
         });
     };
 
-    isHit(laser: Laser, targets: (Position | null)[][], ) {
-        for (let row = 0; targets.length > row; row++) {
-            for (let target = 0; targets[0].length > target; target++) {
-                const currentTarget = targets[row][target];
+    checkRadius(positionOne: Position, positionTwo: Position): boolean {
+        if (positionOne.x === positionTwo.x) return true;
 
-                if (
-                    currentTarget && currentTarget.x === laser.position.x ||
-                    currentTarget && currentTarget.x + 1  === laser.position.x ||
-                    currentTarget && currentTarget.x - 1  === laser.position.x
-                ) {
-                    return { rowIndex: row, targetIndex: target };
+        const radius = 5;
+
+        for (let i = 1; radius > i; i++) {
+            if (
+                positionOne.x === positionTwo.x + i ||
+                positionOne.x === positionTwo.x - i
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    isHit(laser: Laser, targets: Targets) {
+        // if (targets[targets.length - 1][0].position.y !== laser.position.y) {
+        //     return null;
+        // }
+
+        const matrix = targets.matrix;
+
+        let targetIndex;
+
+        for (let i = 0; matrix[0].length > i; i++) {
+            if (this.checkRadius(laser.position, matrix[0][i].position)) {
+                targetIndex = i;
+                break;
+            }
+        }
+        console.log(targetIndex, laser);
+        if (targetIndex !== undefined) {
+            for (let i = matrix.length - 1; i >= 0; i--) {
+                if (matrix[i][0].position.y !== laser.position.y) {
+                    return null;
+                }
+                console.log(this.checkRadius(laser.position, matrix[i][targetIndex].position));
+                if (matrix[i][targetIndex].isHit) {
+                    continue;
+                }
+
+                if (this.checkRadius(laser.position, matrix[i][targetIndex].position)) {
+                    targets.hit(i, targetIndex);
+                    return { rowIndex: i, targetIndex: targetIndex };
                 }
             }
         }
@@ -71,18 +105,18 @@ export default class Lasers {
     }
 
     move(targets: Targets): void {
-        // Обновление позиции лазеров
+        console.log(this.lasers);
         this.lasers.forEach((laser: Laser): void => {
-            // Сдвигаем лазер вверх
             laser.position.y -= 1;
-            const hit = this.isHit(laser, targets.matrix);
-            console.log(hit, laser.position.x);
+            const hit = this.isHit(laser, targets);
+            // Если лазер попадает в цель, удаляем его
             if (hit) {
                 console.log('Hit');
-                targets.hit(hit.rowIndex, hit.targetIndex);
+                // targets.hit(hit.rowIndex, hit.targetIndex);
+                this.removeLaser(laser.id);
             }
 
-            // Если лазер достиг верхней границы, удаляем его из массива
+            // Если лазер достиг верхней границы, удаляем его
             if (laser.position.y < 0) {
                 this.removeLaser(laser.id);
             }
