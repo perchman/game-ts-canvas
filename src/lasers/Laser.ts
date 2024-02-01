@@ -1,33 +1,31 @@
-const dataset = require('../dataset');
-
-export default class Target {
+export default class Laser {
+    canvas: HTMLCanvasElement
     x: number
     y: number
     width: number
     height: number
-    image: HTMLImageElement
-    isHit: boolean
+    speed: number
+    color: string
 
-    constructor(x: number, y: number) {
+    constructor(canvas: HTMLCanvasElement, x: number, y: number, speed: number, color: string) {
+        this.canvas = canvas;
+
         this.x = x;
         this.y = y;
 
-        this.width = 50;
-        this.height = 50;
+        this.width = 5;
+        this.height = 20;
 
-        this.image = new Image();
-        this.image.src = dataset.target;
+        this.speed = speed;
 
-        this.isHit = false;
+        this.color = color;
     }
 
     draw(context: CanvasRenderingContext2D): void {
-        context.drawImage(this.image, this.x, this.y, this.width, this.height);
-    }
+        this.y -= this.speed;
 
-    move(xSpeed: number, ySpeed: number): void {
-        this.x += xSpeed;
-        this.y += ySpeed;
+        context.fillStyle = this.color;
+        context.fillRect(this.x, this.y, this.width, this.height);
     }
 
     isCollide(entity: any): boolean {

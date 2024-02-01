@@ -1,36 +1,77 @@
 import "./style.css";
-import TargetsController from "./targets/TargetsController";
-
-const dataset = require('./dataset');
+import Game from "./Game";
 
 const root: HTMLElement | null = document.getElementById('root');
 if (!root) throw new Error('HTMLElement "root" is null');
 
-root.innerHTML = `
-        <div class="container">
-            <canvas id="canvas"></canvas>
-        </div>
-    `;
+root.innerHTML = `<canvas id="canvas"></canvas>`;
 
 const canvas: HTMLCanvasElement = document.getElementById('canvas') as HTMLCanvasElement;
-canvas.width = 600;
-canvas.height = 600;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-const targetsController: TargetsController = new TargetsController(canvas);
-targetsController.createTargets();
+const game: Game = new Game(canvas);
 
-const context: CanvasRenderingContext2D = canvas.getContext('2d') as CanvasRenderingContext2D;
+setInterval(game.play, 1000/60);
 
-const background: HTMLImageElement = new Image();
-background.src = dataset.space;
+// const shipLasersController: LasersController = new LasersController(canvas, 10, 'green');
+// const ship: Ship = new Ship(canvas, shipLasersController);
+//
+// const targetsLasersController: LasersController = new LasersController(canvas, 4, 'red');
+// const targetsController: TargetsController = new TargetsController(canvas, targetsLasersController, shipLasersController);
+// targetsController.createTargets();
 
-const game = (): void => {
-    context.drawImage(background, 0, 0, canvas.width, canvas.height);
+// const context: CanvasRenderingContext2D = canvas.getContext('2d') as CanvasRenderingContext2D;
+//
+// const background: HTMLImageElement = new Image();
+// background.src = dataset.space;
 
-    targetsController.draw(context);
-}
+// let isGameOver: boolean = false,
+//     isWin: boolean = false;
 
-setInterval(game, 1000/60);
+// const game = (): void => {
+//     checkGameOver();
+//
+//     context.drawImage(background, 0, 0, canvas.width, canvas.height);
+//
+//     if (!isGameOver) {
+//         ship.draw(context);
+//         shipLasersController.draw(context);
+//         targetsController.draw(context);
+//         targetsLasersController.draw(context);
+//     } else {
+//         displayGameOver();
+//     }
+// }
+
+// const displayGameOver = (): void => {
+//     let text: string = isWin ? "You Win" : "Game Over";
+//     let textWidth: number = context.measureText(text).width;
+//
+//     context.fillStyle = "white";
+//     context.font = "70px Arial";
+//     context.fillText(text, (canvas.width - textWidth) / 2, canvas.height / 2);
+// }
+
+// const checkGameOver = (): void => {
+//     if (isGameOver) {
+//         return;
+//     }
+//
+//     if (targetsLasersController.isCollide(ship)) {
+//         isGameOver = true;
+//     }
+//
+//     if (targetsController.isCollide(ship)) {
+//         isGameOver = true;
+//     }
+//
+//     if (targetsController.matrix.length === 0) {
+//         isWin = true;
+//         isGameOver = true;
+//     }
+// }
+
 
 // document.addEventListener('DOMContentLoaded', (): void => {
 //
@@ -42,7 +83,7 @@ setInterval(game, 1000/60);
 
 
 
-// import Ship from "./Ship";
+// import ship from "./ship";
 // import Lasers from "./Laser";
 // import Targets from "./Targets";
 // import './style.css';
@@ -64,7 +105,7 @@ setInterval(game, 1000/60);
 //     `;
 //
 //     const canvas: HTMLCanvasElement = document.getElementById('canvas') as HTMLCanvasElement;
-//     const ship: Ship = new Ship(canvas, {x: 150, y: 130});
+//     const ship: ship = new ship(canvas, {x: 150, y: 130});
 //     const lasers: Lasers = new Lasers(canvas);
 //     const targets: Targets = new Targets(canvas);
 //     targets.createMatrix();

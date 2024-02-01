@@ -1,9 +1,9 @@
 import Target from "./Target";
+import LasersController from "../lasers/LasersController";
 
 export default class TargetsController {
     canvas: HTMLCanvasElement
     matrix: Target[][]
-    // moveDirection: { [key: string]: number; }
     currentDirection: string
     xSpeed: number
     ySpeed: number
@@ -11,17 +11,18 @@ export default class TargetsController {
     defaultYSpeed: number
     moveDownTimerDefault: number
     moveDownTimer: number
+    targetLasersController: LasersController
+    shipLasersController: LasersController
+    laserTimerDefault: number
+    laserTimer: number
 
-    constructor(canvas: HTMLCanvasElement) {
+    constructor(
+        canvas: HTMLCanvasElement,
+        targetLasersController: LasersController,
+        shipLasersController: LasersController
+    ) {
         this.canvas = canvas;
         this.matrix = [];
-
-        // this.moveDirection = {
-        //     left: 0,
-        //     right: 1,
-        //     downLeft: 2,
-        //     downRight: 3
-        // }
 
         this.currentDirection = 'right';
         this.xSpeed = 0;
@@ -30,14 +31,18 @@ export default class TargetsController {
         this.defaultYSpeed = 1;
         this.moveDownTimerDefault = 30;
         this.moveDownTimer = this.moveDownTimerDefault;
+
+        this.targetLasersController = targetLasersController;
+        this.shipLasersController = shipLasersController;
+        this.laserTimerDefault = 100;
+        this.laserTimer = this.laserTimerDefault;
     }
 
-    createTargets() {
+    createTargets(): void {
         const rows = 3;
-        const cols = 10;
-
         const paddingLR = 50; // Х расстояние между целями
         const paddingTB = 35; // Y расстояние между целями
+        const cols = Math.floor(((this.canvas.width * 0.7) + paddingLR) / (paddingLR));
 
         for (let i = 0; rows > i; i++) {
             const row = [];
@@ -50,14 +55,16 @@ export default class TargetsController {
         }
     }
 
-    draw(context: CanvasRenderingContext2D) {
+    draw(context: CanvasRenderingContext2D): void {
         this.decrementMoveDownTimer();
-        this.updateSpeedAndDirection();
+        this.updateMoveDirection();
+        this.collisionDetection();
         this.drawTargets(context);
         this.resetMoveDownTimer();
+        this.fire();
     }
 
-    decrementMoveDownTimer() {
+    decrementMoveDownTimer(): void {
         if (
             this.currentDirection === 'downLeft' ||
             this.currentDirection === 'downRight'
@@ -66,46 +73,37 @@ export default class TargetsController {
         }
     }
 
-    updateSpeedAndDirection() {
-        loop: for (let row of this.matrix) {
-            switch (this.currentDirection) {
-                case 'right':
-                    this.xSpeed = this.defaultXSpeed;
-                    this.ySpeed = 0;
+    updateMoveDirection(): void {
+        for (let row of this.matrix) {
+            if (this.currentDirection === 'right') {
+                this.xSpeed = this.defaultXSpeed;
+                this.ySpeed = 0;
 
-                    const rightmostTarget: Target = row[row.length - 1];
-                    if (rightmostTarget.x + rightmostTarget.width >= this.canvas.width) {
-                        this.currentDirection = 'downLeft';
-                        break;
-                    }
-                    break;
+                const rightmostTarget: Target = row[row.length - 1];
+                if (rightmostTarget.x + rightmostTarget.width >= this.canvas.width) {
+                    this.currentDirection = 'downLeft';
+                }
+            } else if (this.currentDirection === 'downLeft') {
+                if (this.moveDown('left')) {
+                    return;
+                }
+            } else if (this.currentDirection === 'left') {
+                this.xSpeed = -this.defaultXSpeed;
+                this.ySpeed = 0;
 
-                case 'downLeft':
-                    if (this.moveDown('left')) {
-                        break loop;
-                    }
-                    break;
-
-                case 'left':
-                    this.xSpeed = -this.defaultXSpeed;
-                    this.ySpeed = 0;
-
-                    const leftmostTarget: Target = row[0];
-                    if (0 >= leftmostTarget.x) {
-                        this.currentDirection = 'downRight';
-                        break;
-                    }
-
-                // case 'downRight':
-                //     if (this.moveDown('right')) {
-                //         break loop;
-                //     }
-                //     break;
+                const leftmostTarget: Target = row[0];
+                if (0 >= leftmostTarget.x) {
+                    this.currentDirection = 'downRight';
+                }
+            } else if (this.currentDirection === 'downRight') {
+                if (this.moveDown('right')) {
+                    return;
+                }
             }
         }
     }
 
-    drawTargets(context: CanvasRenderingContext2D) {
+    drawTargets(context: CanvasRenderingContext2D): void {
         for (let row of this.matrix) {
             for (let target of row) {
                 target.move(this.xSpeed, this.ySpeed);
@@ -114,7 +112,7 @@ export default class TargetsController {
         }
     }
 
-    resetMoveDownTimer() {
+    resetMoveDownTimer(): void {
         if (0 >= this.moveDownTimer) {
             this.moveDownTimer = this.moveDownTimerDefault;
         }
@@ -132,7 +130,35 @@ export default class TargetsController {
         return false;
     }
 
+    fire(): void {
+        this.laserTimer--;
+        if (this.laserTimer <= 0) {
+            this.laserTimer = this.laserTimerDefault;
+            const allTargets: Target[] = this.matrix.flat();
+            const index: number = Math.floor(Math.random() * allTargets.length);
+            const target: Target = allTargets[index];
+            this.targetLasersController.fire(target.x + target.width / 2, target.y, -3);
+        }
+    }
 
+    collisionDetection(): void {
+        this.matrix.forEach((row) => {
+            row.forEach((target, index) => {
+                if (this.shipLasersController.isCollide(target)) {
+                    row.splice(index, 1);
+                }
+            });
+        });
 
+        this.matrix = this.matrix.filter((row) => row.length > 0);
+    }
 
+    isCollide(entity: any): boolean {
+        return this.matrix.flat().some((target: Target) => target.isCollide(entity));
+    }
+
+    restart(): void {
+        this.matrix = [];
+        this.createTargets();
+    }
 }
