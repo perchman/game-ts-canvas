@@ -1,4 +1,5 @@
 const dataset = require('../dataset');
+import ExplosionsController from "./explosions/ExplosionsController";
 
 export default class Target {
     x: number
@@ -7,8 +8,9 @@ export default class Target {
     height: number
     image: HTMLImageElement
     isHit: boolean
+    explosionsController: ExplosionsController
 
-    constructor(x: number, y: number) {
+    constructor(x: number, y: number, explosionsController: ExplosionsController) {
         this.x = x;
         this.y = y;
 
@@ -19,6 +21,8 @@ export default class Target {
         this.image.src = dataset.target;
 
         this.isHit = false;
+
+        this.explosionsController = explosionsController;
     }
 
     draw(context: CanvasRenderingContext2D): void {
@@ -41,5 +45,9 @@ export default class Target {
         } else {
             return false;
         }
+    }
+
+    explosion(): void {
+        this.explosionsController.createExplosion(this.x, this.y);
     }
 }

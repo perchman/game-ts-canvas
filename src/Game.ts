@@ -1,6 +1,7 @@
 import Ship from "./ship/Ship";
 import TargetsController from "./targets/TargetsController";
 import LasersController from "./lasers/LasersController";
+import ExplosionsController from "./targets/explosions/ExplosionsController";
 const dataset = require("./dataset");
 
 export default class Game {
@@ -16,6 +17,7 @@ export default class Game {
     shipLasersController: LasersController
     ship: Ship
     targetsLasersController: LasersController
+    explosionsController: ExplosionsController
     targetsController: TargetsController
 
     constructor(canvas: HTMLCanvasElement) {
@@ -36,8 +38,14 @@ export default class Game {
         this.shipLasersController = new LasersController(canvas, 10, 'green');
         this.ship = new Ship(this.canvas, this.shipLasersController);
 
-        this.targetsLasersController = new LasersController(canvas, 4, 'red');
-        this.targetsController = new TargetsController(canvas, this.targetsLasersController, this.shipLasersController);
+        this.targetsLasersController = new LasersController(canvas, 20, 'red');
+        this.explosionsController = new ExplosionsController();
+        this.targetsController = new TargetsController(
+            canvas,
+            this.targetsLasersController,
+            this.shipLasersController,
+            this.explosionsController
+        );
         this.targetsController.createTargets();
 
         document.addEventListener("keyup", this.keyup);
@@ -56,6 +64,7 @@ export default class Game {
                 this.shipLasersController.draw(this.context);
                 this.targetsController.draw(this.context);
                 this.targetsLasersController.draw(this.context);
+                this.explosionsController.draw(this.context);
             } else {
                 this.displayGameOver();
             }

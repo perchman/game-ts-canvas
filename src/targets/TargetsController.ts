@@ -1,5 +1,6 @@
 import Target from "./Target";
 import LasersController from "../lasers/LasersController";
+import ExplosionsController from "./explosions/ExplosionsController";
 
 export default class TargetsController {
     canvas: HTMLCanvasElement
@@ -15,11 +16,13 @@ export default class TargetsController {
     shipLasersController: LasersController
     laserTimerDefault: number
     laserTimer: number
+    explosionsController: ExplosionsController
 
     constructor(
         canvas: HTMLCanvasElement,
         targetLasersController: LasersController,
-        shipLasersController: LasersController
+        shipLasersController: LasersController,
+        explosionsController: ExplosionsController
     ) {
         this.canvas = canvas;
         this.matrix = [];
@@ -34,8 +37,10 @@ export default class TargetsController {
 
         this.targetLasersController = targetLasersController;
         this.shipLasersController = shipLasersController;
-        this.laserTimerDefault = 100;
+        this.laserTimerDefault = 40;
         this.laserTimer = this.laserTimerDefault;
+
+        this.explosionsController = explosionsController;
     }
 
     createTargets(): void {
@@ -48,7 +53,7 @@ export default class TargetsController {
             const row = [];
 
             for (let j = 0; cols > j; j++) {
-                row.push(new Target(j * paddingLR, i * paddingTB));
+                row.push(new Target(j * paddingLR, i * paddingTB, this.explosionsController));
             }
 
             this.matrix.push(row);
@@ -145,6 +150,7 @@ export default class TargetsController {
         this.matrix.forEach((row) => {
             row.forEach((target, index) => {
                 if (this.shipLasersController.isCollide(target)) {
+                    target.explosion();
                     row.splice(index, 1);
                 }
             });
