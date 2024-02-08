@@ -45,15 +45,15 @@ export default class TargetsController {
 
     createTargets(): void {
         const rows = 3;
-        const paddingLR = 50; // Х расстояние между целями
-        const paddingTB = 35; // Y расстояние между целями
-        const cols = Math.floor(((this.canvas.width * 0.7) + paddingLR) / (paddingLR));
+        const paddingX = 50;
+        const paddingY = 35;
+        const cols = Math.floor(((this.canvas.width * 0.7) + paddingX) / (paddingX));
 
         for (let i = 0; rows > i; i++) {
             const row = [];
 
             for (let j = 0; cols > j; j++) {
-                row.push(new Target(j * paddingLR, i * paddingTB, this.explosionsController));
+                row.push(new Target(j * paddingX, i * paddingY, this.explosionsController));
             }
 
             this.matrix.push(row);

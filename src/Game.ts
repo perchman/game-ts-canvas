@@ -139,10 +139,6 @@ export default class Game {
         }
     }
 
-    nextLevel(): void {
-
-    }
-
     restart(): void {
         this.shipLasersController.restart();
         this.ship.restart();
